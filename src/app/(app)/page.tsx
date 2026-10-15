@@ -1,23 +1,25 @@
-import { Button } from "@/components/ui/button";
-import { logoutAction } from "@/lib/auth/actions";
+import type { Metadata } from "next";
+
+import { PageHeader } from "@/components/layout/page-header";
+import { Empty } from "@/components/states/empty";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = { title: "Resumen · MoneyWise" };
 
 export default async function ResumenPage() {
   const session = await getSession();
+  const nombre = session?.nombre?.trim();
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-3xl flex-col justify-center gap-4 px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Hola, {session?.nombre || "bienvenida o bienvenido"}
-      </h1>
-      <p className="text-muted-foreground">
-        Aquí estará tu resumen del mes. Estamos construyendo esta pantalla.
-      </p>
-      <form action={logoutAction}>
-        <Button type="submit" variant="outline">
-          Cerrar sesión
-        </Button>
-      </form>
-    </main>
+    <div className="grid gap-6">
+      <PageHeader
+        title={nombre ? `Hola, ${nombre}` : "Resumen"}
+        description="Así va tu mes."
+      />
+      <Empty
+        title="Estamos construyendo esta pantalla"
+        description="Aquí verás tu balance, tus ingresos y egresos y tus metas."
+      />
+    </div>
   );
 }

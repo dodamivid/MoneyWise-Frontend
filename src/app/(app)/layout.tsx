@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 
+import { AppNav } from "@/components/layout/app-nav";
 import { getSession } from "@/lib/auth/session";
 
 /**
- * Segunda barrera de las rutas privadas. `proxy.ts` ya redirige, pero aquí se
- * vuelve a verificar la sesión en el servidor: el proxy es solo optimista.
- * El layout con navegación se construye en el issue #5.
+ * Layout de las pantallas privadas: navegación lateral en escritorio y barra
+ * inferior en móvil. También es la segunda barrera de acceso: `proxy.ts` ya
+ * redirige, pero aquí se vuelve a verificar la sesión en el servidor.
  */
 export default async function AppLayout({
   children,
@@ -15,5 +16,22 @@ export default async function AppLayout({
   const session = await getSession();
   if (!session) redirect("/login");
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-svh">
+      <a
+        href="#contenido"
+        className="sr-only z-50 rounded-lg bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+      >
+        Saltar al contenido
+      </a>
+      <AppNav user={{ nombre: session.nombre, correo: session.correo }} />
+      <main
+        id="contenido"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-5xl px-4 pt-6 pb-28 outline-none md:pt-10 md:pr-8 md:pb-10 md:pl-[calc(16rem+2rem)]"
+      >
+        {children}
+      </main>
+    </div>
+  );
 }
