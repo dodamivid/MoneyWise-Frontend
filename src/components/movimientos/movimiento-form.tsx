@@ -125,6 +125,11 @@ export function MovimientoForm({
         label={`${texts.secondaryLabel} (opcional)`}
         placeholder="Sin especificar"
         value={secondaryId}
+        hint={
+          editing && !config.canClearOnUpdate
+            ? "Una vez guardado, no se puede dejar vacío."
+            : undefined
+        }
         error={errors.secondaryId?.message}
         {...register("secondaryId")}
       />
@@ -142,6 +147,11 @@ export function MovimientoForm({
         id="descripcion"
         label="Descripción (opcional)"
         autoComplete="off"
+        hint={
+          editing && !config.canClearOnUpdate
+            ? "Una vez guardada, no se puede dejar vacía."
+            : undefined
+        }
         error={errors.descripcion?.message}
         {...register("descripcion")}
       />

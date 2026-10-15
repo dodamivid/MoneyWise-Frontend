@@ -18,6 +18,16 @@ export interface MovimientoConfig {
   secondaryField: "procedenciaId" | "destinoId";
   tipoCatalogo: CatalogoKey;
   secondaryCatalogo: CatalogoKey;
+  /**
+   * El backend de egresos exige mandar `desde` y `hasta` juntos al listar.
+   * Cuando solo hay una, se completa la otra con un extremo abierto.
+   */
+  requiresBothDates: boolean;
+  /**
+   * Si al editar se puede dejar vacío (`null`) el campo secundario y la
+   * descripción. En ingresos sí; en egresos el backend los rechaza.
+   */
+  canClearOnUpdate: boolean;
   texts: {
     singular: string;
     plural: string;
@@ -39,6 +49,8 @@ export const MOVIMIENTOS: Record<MovimientoKind, MovimientoConfig> = {
     secondaryField: "procedenciaId",
     tipoCatalogo: "tipos-ingreso",
     secondaryCatalogo: "procedencias",
+    requiresBothDates: false,
+    canClearOnUpdate: true,
     texts: {
       singular: "ingreso",
       plural: "ingresos",
@@ -58,6 +70,8 @@ export const MOVIMIENTOS: Record<MovimientoKind, MovimientoConfig> = {
     secondaryField: "destinoId",
     tipoCatalogo: "tipos-egreso",
     secondaryCatalogo: "destinos",
+    requiresBothDates: true,
+    canClearOnUpdate: false,
     texts: {
       singular: "egreso",
       plural: "egresos",
