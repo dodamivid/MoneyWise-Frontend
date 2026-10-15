@@ -60,18 +60,25 @@ interface Filters {
 }
 const NO_FILTERS: Filters = { tipoId: "", desde: "", hasta: "" };
 
+/** Extremos abiertos para cuando el backend exige `desde` y `hasta` juntos. */
+const OPEN_START = "2000-01-01T00:00:00.000Z";
+const OPEN_END = "2100-12-31T23:59:59.999Z";
+
 /** Inicio y fin del día en hora de México, como ISO para `desde` y `hasta`. */
-function dayBounds(filters: Filters) {
+function dayBounds(filters: Filters, requiresBoth: boolean) {
   const start = filters.desde ? dateInputToIso(filters.desde) : null;
   const end = filters.hasta ? dateInputToIso(filters.hasta) : null;
-  return {
-    desde: start
-      ? new Date(Date.parse(start) - 12 * 3600_000).toISOString()
-      : undefined,
-    hasta: end
-      ? new Date(Date.parse(end) + 12 * 3600_000 - 1).toISOString()
-      : undefined,
-  };
+  let desde = start
+    ? new Date(Date.parse(start) - 12 * 3600_000).toISOString()
+    : undefined;
+  let hasta = end
+    ? new Date(Date.parse(end) + 12 * 3600_000 - 1).toISOString()
+    : undefined;
+  if (requiresBoth && (desde || hasta)) {
+    desde ??= OPEN_START;
+    hasta ??= OPEN_END;
+  }
+  return { desde, hasta };
 }
 
 export function MovimientosView({ kind }: { kind: MovimientoKind }) {
@@ -97,7 +104,7 @@ export function MovimientosView({ kind }: { kind: MovimientoKind }) {
     [secundarios.options],
   );
 
-  const bounds = dayBounds(filters);
+  const bounds = dayBounds(filters, config.requiresBothDates);
   const params = {
     pagina,
     tamanoPagina: PAGE_SIZE,

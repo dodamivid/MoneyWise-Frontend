@@ -102,8 +102,10 @@ export function rowToValues(
 /**
  * Cuerpo para crear (POST) o editar (PATCH).
  *
- * En una edición, si la descripción queda vacía se manda `null` para borrarla.
- * `fechaFin` vacía se omite: el backend no permite dejarla en `null` al editar.
+ * En una edición, si el secundario o la descripción quedan vacíos se manda
+ * `null` para borrarlos, pero solo donde el backend lo acepta
+ * (`config.canClearOnUpdate`); si no, se omiten y se conserva lo guardado.
+ * `fechaFin` vacía siempre se omite: el backend no permite dejarla en `null`.
  */
 export function toBody(
   values: MovimientoFormValues,
@@ -118,13 +120,14 @@ export function toBody(
 
   if (values.secondaryId !== "") {
     body[config.secondaryField] = Number(values.secondaryId);
-  } else if (mode === "update") {
+  } else if (mode === "update" && config.canClearOnUpdate) {
     body[config.secondaryField] = null;
   }
 
   const descripcion = values.descripcion.trim();
   if (descripcion !== "") body.descripcion = descripcion;
-  else if (mode === "update") body.descripcion = null;
+  else if (mode === "update" && config.canClearOnUpdate)
+    body.descripcion = null;
 
   if (values.fechaFin !== "") body.fechaFin = dateInputToIso(values.fechaFin);
 

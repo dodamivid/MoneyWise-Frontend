@@ -16,6 +16,8 @@ interface CatalogSelectProps extends Omit<
   label: string;
   /** Texto de la opción vacía. */
   placeholder?: string;
+  /** Ayuda estática que se lee junto con el campo. */
+  hint?: string;
   /** Error de validación del formulario. */
   error?: string;
 }
@@ -35,6 +37,7 @@ export function CatalogSelect({
   catalogo,
   label,
   placeholder = "Elige una opción",
+  hint,
   error,
   className,
   disabled,
@@ -48,11 +51,12 @@ export function CatalogSelect({
     refetch,
   } = useCatalogo(catalogo);
 
+  const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const statusId = `${id}-status`;
   const empty = !isLoading && !isError && options.length === 0;
   const describedBy =
-    [errorId, isLoading || isError || empty ? statusId : undefined]
+    [hintId, errorId, isLoading || isError || empty ? statusId : undefined]
       .filter(Boolean)
       .join(" ") || undefined;
 
@@ -113,6 +117,12 @@ export function CatalogSelect({
       {empty ? (
         <p id={statusId} className="text-sm text-muted-foreground">
           Aún no hay opciones de {label.toLowerCase()} disponibles.
+        </p>
+      ) : null}
+
+      {hint ? (
+        <p id={hintId} className="text-sm text-muted-foreground">
+          {hint}
         </p>
       ) : null}
 

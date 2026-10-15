@@ -349,7 +349,18 @@ const egresos = crudRoutes("egreso", {
   listKey: "egresos",
   idKey: "egresoId",
   extraIdField: "destinoId",
-  validator: validateMovimiento,
+  // El backend real: PATCH no acepta null en destinoId ni en descripcion.
+  validator: (body, options) => {
+    const issues = validateMovimiento(body, options);
+    if (options.partial) {
+      for (const key of ["destinoId", "descripcion"]) {
+        if (body[key] === null) {
+          issues.push(issue(key, `${key} no puede ser null`));
+        }
+      }
+    }
+    return issues;
+  },
   build: (b) => ({
     tipoId: b.tipoId,
     destinoId: b.destinoId ?? null,
@@ -663,6 +674,23 @@ const server = createServer(async (req, res) => {
     const handler = crud[crudMatch[1]];
     const id = crudMatch[2];
     if (!id && method === "GET") {
+      // El backend real de egresos exige desde y hasta juntos.
+      if (
+        crudMatch[1] === "egresos" &&
+        Boolean(query.get("desde")) !== Boolean(query.get("hasta"))
+      ) {
+        return send(
+          res,
+          422,
+          moduleError("DATOS_INVALIDOS", "Parametros de consulta invalidos", [
+            issue(
+              "desde",
+              "Debe proporcionar ambos 'desde' y 'hasta', y desde <= hasta",
+            ),
+          ]),
+          traceId,
+        );
+      }
       const page = handler.list(store, query, userId);
       return send(res, 200, ok(page.data, page.meta), traceId);
     }
