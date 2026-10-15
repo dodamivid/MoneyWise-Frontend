@@ -701,39 +701,86 @@ const server = createServer(async (req, res) => {
     if (id && method === "DELETE") return respond(handler.remove(store, id));
   }
 
-  // Metas
+  // Metas (como el backend real: DELETE es soft delete y ahorroReal se edita con PATCH)
   const metaMatch = path.match(/^\/api\/v1\/metas(?:\/(\d+))?$/);
   if (metaMatch) {
     const id = metaMatch[1];
+    const validateMeta = (b, partial) => {
+      const issues = [];
+      const has = (k) => b[k] !== undefined;
+      if (!partial || has("nombre")) {
+        if (typeof b.nombre !== "string" || b.nombre.trim().length < 1) {
+          issues.push(issue("nombre", "El nombre es obligatorio"));
+        } else if (b.nombre.length > 120) {
+          issues.push(
+            issue("nombre", "El nombre no puede exceder 120 caracteres"),
+          );
+        }
+      }
+      if (!partial || has("montoObjetivo")) {
+        if (typeof b.montoObjetivo !== "number" || b.montoObjetivo <= 0) {
+          issues.push(
+            issue("montoObjetivo", "montoObjetivo debe ser positivo"),
+          );
+        } else if (!twoDecimals(b.montoObjetivo)) {
+          issues.push(
+            issue(
+              "montoObjetivo",
+              "montoObjetivo debe tener maximo 2 decimales",
+            ),
+          );
+        }
+      }
+      if (
+        has("ahorroReal") &&
+        (typeof b.ahorroReal !== "number" || b.ahorroReal < 0)
+      ) {
+        issues.push(issue("ahorroReal", "ahorroReal no puede ser negativo"));
+      }
+      if (!partial || has("fechaInicio")) {
+        if (!isIso(b.fechaInicio))
+          issues.push(
+            issue("fechaInicio", "Fecha debe estar en formato ISO-8601"),
+          );
+      }
+      if (
+        isIso(b.fechaInicio) &&
+        isIso(b.fechaFin) &&
+        Date.parse(b.fechaFin) < Date.parse(b.fechaInicio)
+      ) {
+        issues.push(issue("fechaFin", "fechaFin debe ser >= fechaInicio"));
+      }
+      return issues;
+    };
+
     if (!id && method === "GET") {
+      let rows = store.metas;
+      const activa = query.get("activa");
+      if (activa === "true") rows = rows.filter((m) => m.activa);
+      if (activa === "false") rows = rows.filter((m) => !m.activa);
       const page = paginate(
-        store.metas.map((m) => metaView(m, userId)),
+        rows.map((m) => metaView(m, userId)),
         query,
       );
       return send(res, 200, ok(page.data, page.meta), traceId);
     }
     if (!id && method === "POST") {
-      const issues = [];
-      if (typeof body.nombre !== "string" || body.nombre.trim().length < 2)
-        issues.push(
-          issue("nombre", "El nombre debe tener al menos 2 caracteres"),
-        );
-      if (typeof body.montoObjetivo !== "number" || body.montoObjetivo <= 0)
-        issues.push(issue("montoObjetivo", "montoObjetivo debe ser positivo"));
-      if (issues.length)
+      const issues = validateMeta(body, false);
+      if (issues.length) {
         return send(
           res,
           422,
           moduleError("DATOS_INVALIDOS", "Datos de la meta invalidos", issues),
           traceId,
         );
+      }
       const meta = {
         metaId: nextId++,
         nombre: body.nombre.trim(),
         montoObjetivo: body.montoObjetivo,
         ahorroReal: 0,
         activa: body.activa ?? true,
-        fechaInicio: body.fechaInicio ?? stamp(),
+        fechaInicio: body.fechaInicio,
         fechaFin: body.fechaFin,
       };
       store.metas.push(meta);
@@ -742,21 +789,53 @@ const server = createServer(async (req, res) => {
     const meta = id
       ? store.metas.find((m) => String(m.metaId) === id)
       : undefined;
-    if (id && !meta)
+    if (id && !meta) {
       return send(
         res,
         404,
         moduleError("NO_ENCONTRADO", "Meta no encontrada"),
         traceId,
       );
+    }
     if (id && method === "GET")
       return send(res, 200, ok(metaView(meta, userId)), traceId);
     if (id && method === "PATCH") {
+      if (Object.keys(body).length === 0) {
+        return send(
+          res,
+          422,
+          moduleError(
+            "DATOS_INVALIDOS",
+            "Debe proporcionar al menos un campo para actualizar",
+          ),
+          traceId,
+        );
+      }
+      const merged = { ...meta, ...body };
+      const issues = validateMeta(body, true);
+      if (merged.ahorroReal > merged.montoObjetivo) {
+        issues.push(
+          issue("ahorroReal", "ahorroReal no puede superar montoObjetivo"),
+        );
+      }
+      if (issues.length) {
+        return send(
+          res,
+          422,
+          moduleError(
+            "DATOS_INVALIDOS",
+            "Datos de actualizacion invalidos",
+            issues,
+          ),
+          traceId,
+        );
+      }
       Object.assign(
         meta,
         pick(body, [
           "nombre",
           "montoObjetivo",
+          "ahorroReal",
           "activa",
           "fechaInicio",
           "fechaFin",
@@ -766,7 +845,9 @@ const server = createServer(async (req, res) => {
       return send(res, 200, ok({ actualizado: true }), traceId);
     }
     if (id && method === "DELETE") {
-      store.metas.splice(store.metas.indexOf(meta), 1);
+      // Soft delete: la meta se queda, pero inactiva.
+      meta.activa = false;
+      meta.actualizadoEn = stamp();
       return send(res, 200, ok({ eliminado: true }), traceId);
     }
   }

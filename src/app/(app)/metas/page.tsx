@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/layout/page-header";
-import { Empty } from "@/components/states/empty";
+import { MetasView } from "@/components/metas/metas-view";
+import { getSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Metas · MoneyWise" };
 
-export default function MetasPage() {
-  return (
-    <div className="grid gap-6">
-      <PageHeader
-        title="Metas"
-        description="Tus objetivos de ahorro y cómo avanzan."
-      />
-      <Empty
-        title="Estamos construyendo esta pantalla"
-        description="Pronto podrás usarla desde aquí."
-      />
-    </div>
-  );
+export default async function MetasPage() {
+  const session = await getSession();
+  // El backend pide `usuarioId` al crear una meta; es el de la sesión.
+  return <MetasView usuarioId={Number(session?.sub)} />;
 }
