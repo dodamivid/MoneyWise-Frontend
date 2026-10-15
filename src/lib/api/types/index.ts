@@ -1,0 +1,10 @@
+export type * from "./common";
+export type * from "./auth";
+export type * from "./ahorro";
+export type * from "./catalogos";
+export type * from "./dashboard";
+export type * from "./egresos";
+export type * from "./ingresos";
+export type * from "./inversiones";
+export type * from "./metas";
+export type * from "./usuarios";
