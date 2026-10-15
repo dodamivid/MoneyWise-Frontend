@@ -94,7 +94,11 @@ export async function callBackend<T = unknown>(
   if (request.body !== undefined) headers["content-type"] = "application/json";
   if (request.identity) {
     headers["x-mw-user"] = request.identity.userId;
-    headers["x-mw-scopes"] = request.identity.scopes.join(",");
+    // Sin scopes, el backend asigna los suyos por defecto; un header vacío no
+    // aporta nada, así que solo se manda cuando hay scopes.
+    if (request.identity.scopes.length > 0) {
+      headers["x-mw-scopes"] = request.identity.scopes.join(",");
+    }
   }
 
   const search = request.search

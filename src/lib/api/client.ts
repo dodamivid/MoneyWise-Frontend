@@ -56,7 +56,16 @@ export async function apiRequest<T>(
     });
 
     const json: unknown = await response.json().catch(() => undefined);
-    if (isApiResult(json)) return json as ApiResult<T>;
+    if (isApiResult(json)) {
+      // La sesión caducó: se manda a login y se regresa a esta pantalla después.
+      if (!json.ok && json.error.codigo === "SIN_SESION") {
+        const next = encodeURIComponent(
+          `${window.location.pathname}${window.location.search}`,
+        );
+        window.location.replace(`/login?next=${next}`);
+      }
+      return json as ApiResult<T>;
+    }
 
     return networkError(
       502,

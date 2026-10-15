@@ -53,7 +53,20 @@ async function handle(request: NextRequest, context: RouteContext) {
     if (body === "") body = undefined;
   }
 
+  // Solo /health es público. Todo lo demás exige una sesión vigente: sin ella,
+  // el backend atendería la petición como su usuario por defecto (`demo-user`).
   const identity = await getBackendIdentity();
+  if (!identity && backendPath !== "/health") {
+    return respond({
+      ok: false,
+      error: {
+        status: 401,
+        mensaje: "Tu sesión terminó. Inicia sesión de nuevo para continuar.",
+        codigo: "SIN_SESION",
+      },
+    });
+  }
+
   const result = await callBackend({
     method: request.method,
     path: backendPath,
