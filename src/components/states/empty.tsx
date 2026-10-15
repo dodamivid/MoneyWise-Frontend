@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Inbox, type LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface EmptyAction {
@@ -49,9 +49,10 @@ export function Empty({
       </div>
       {action ? (
         action.href ? (
-          <Button nativeButton={false} render={<Link href={action.href} />}>
+          // Un enlace de verdad (rol "link"), con la apariencia del botón.
+          <Link href={action.href} className={buttonVariants()}>
             {action.label}
-          </Button>
+          </Link>
         ) : (
           <Button onClick={action.onClick}>{action.label}</Button>
         )
