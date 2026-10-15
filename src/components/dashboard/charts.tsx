@@ -49,7 +49,12 @@ export function GastoPorCategoriaChart({ data }: { data: CategoriaDatum[] }) {
   return (
     <div style={{ height }} aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ left: 8, right: 16 }}
+          accessibilityLayer={false}
+        >
           <CartesianGrid horizontal={false} stroke="var(--border)" />
           <XAxis
             type="number"
@@ -91,7 +96,11 @@ export function MetasVsAhorroChart({ data }: { data: MetaDatum[] }) {
   return (
     <div style={{ height: 300 }} aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ left: 8, right: 8 }}>
+        <BarChart
+          data={data}
+          margin={{ left: 8, right: 8 }}
+          accessibilityLayer={false}
+        >
           <CartesianGrid vertical={false} stroke="var(--border)" />
           <XAxis dataKey="nombre" tick={AXIS} stroke="var(--border)" />
           <YAxis

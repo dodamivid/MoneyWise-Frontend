@@ -28,7 +28,7 @@ function SideLink({ item, pathname }: { item: NavItem; pathname: string }) {
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         active
-          ? "bg-primary/10 font-semibold text-primary"
+          ? "bg-primary/10 font-semibold text-foreground"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >

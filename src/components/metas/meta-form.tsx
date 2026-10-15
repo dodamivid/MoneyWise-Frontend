@@ -163,7 +163,7 @@ export function MetaForm({
           <input
             id="activa"
             type="checkbox"
-            className="size-4 rounded border-input accent-primary"
+            className="size-5 rounded border-input accent-primary"
             {...register("activa")}
           />
           <Label htmlFor="activa">Meta activa</Label>
