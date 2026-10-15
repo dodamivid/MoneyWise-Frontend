@@ -17,7 +17,9 @@ export default function RegistroPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Crea tu cuenta</CardTitle>
+        <CardTitle role="heading" aria-level={1} className="text-xl">
+          Crea tu cuenta
+        </CardTitle>
         <CardDescription>
           Registra tus ingresos y egresos y mira cómo vas.
         </CardDescription>

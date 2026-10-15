@@ -64,3 +64,58 @@ export const registroSchema = z
     message: "Las contraseñas no coinciden.",
   });
 export type RegistroValues = z.infer<typeof registroSchema>;
+
+// ── Perfil y recuperación (issue #13) ───────────────────────────────────────
+
+const soloLetras = (campo: string) =>
+  z
+    .string()
+    .trim()
+    .min(2, `${campo} debe tener al menos 2 caracteres.`)
+    .max(80, `${campo} no puede pasar de 80 caracteres.`)
+    .regex(
+      /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+      `${campo} solo puede tener letras y espacios.`,
+    );
+
+/** `PUT /api/users/:id` es más estricto que el registro: solo letras y espacios. */
+export const perfilSchema = z.object({
+  nombre: soloLetras("El nombre"),
+  apellidoP: soloLetras("El apellido paterno"),
+  apellidoM: soloLetras("El apellido materno"),
+  fechaN: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Elige tu fecha de nacimiento.")
+    .refine(esMayorDe16, "Debes tener al menos 16 años."),
+});
+export type PerfilValues = z.infer<typeof perfilSchema>;
+
+export const cambioContrasenaSchema = z
+  .object({
+    contrasenaActual: z.string().min(1, "Escribe tu contraseña actual."),
+    contrasenaNueva: contrasenaNueva,
+    confirmarContrasena: z.string().min(1, "Repite la contraseña nueva."),
+  })
+  .refine((v) => v.contrasenaNueva === v.confirmarContrasena, {
+    path: ["confirmarContrasena"],
+    message: "Las contraseñas no coinciden.",
+  })
+  .refine((v) => v.contrasenaNueva !== v.contrasenaActual, {
+    path: ["contrasenaNueva"],
+    message: "La contraseña nueva debe ser distinta de la actual.",
+  });
+export type CambioContrasenaValues = z.infer<typeof cambioContrasenaSchema>;
+
+export const olvidoSchema = z.object({ correo });
+export type OlvidoValues = z.infer<typeof olvidoSchema>;
+
+export const restablecerSchema = z
+  .object({
+    contrasenaNueva: contrasenaNueva,
+    confirmarContrasena: z.string().min(1, "Repite la contraseña nueva."),
+  })
+  .refine((v) => v.contrasenaNueva === v.confirmarContrasena, {
+    path: ["confirmarContrasena"],
+    message: "Las contraseñas no coinciden.",
+  });
+export type RestablecerValues = z.infer<typeof restablecerSchema>;
