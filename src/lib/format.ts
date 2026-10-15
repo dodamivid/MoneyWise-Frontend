@@ -151,6 +151,30 @@ export function isoToDateInput(
   }).format(date);
 }
 
+/**
+ * Primer y último instante del mes en hora de Ciudad de México, como ISO.
+ * `now` se puede inyectar para pruebas.
+ */
+export function monthRangeIso(now: Date = new Date()): {
+  desde: string;
+  hasta: string;
+  label: string;
+} {
+  const [year, month] = isoToDateInput(now).split("-").map(Number);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const desde = new Date(`${year}-${pad(month)}-01T00:00:00-06:00`);
+  const hasta = new Date(
+    `${year}-${pad(month)}-${pad(lastDay)}T23:59:59.999-06:00`,
+  );
+  const label = new Intl.DateTimeFormat(LOCALE, {
+    timeZone: DEFAULT_TIME_ZONE,
+    month: "long",
+    year: "numeric",
+  }).format(now);
+  return { desde: desde.toISOString(), hasta: hasta.toISOString(), label };
+}
+
 /** Porcentaje entero: `60` → `60 %`. */
 export function formatPercent(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
