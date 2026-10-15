@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { AppNav } from "@/components/layout/app-nav";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { getSession } from "@/lib/auth/session";
 
 /**
@@ -30,7 +31,7 @@ export default async function AppLayout({
         tabIndex={-1}
         className="mx-auto w-full max-w-5xl px-4 pt-6 pb-28 outline-none md:pt-10 md:pr-8 md:pb-10 md:pl-[calc(16rem+2rem)]"
       >
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </main>
     </div>
   );
