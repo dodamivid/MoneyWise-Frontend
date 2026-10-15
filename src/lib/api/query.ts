@@ -31,6 +31,7 @@ export function toApiError(error: unknown): ApiError {
   if (error instanceof ApiRequestError) return error.error;
   return {
     status: 500,
-    mensaje: "Algo salió mal. Inténtalo de nuevo en unos minutos.",
+    mensaje:
+      "No pudimos completar la operación. Inténtalo de nuevo en unos minutos.",
   };
 }

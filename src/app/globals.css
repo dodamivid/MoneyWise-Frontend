@@ -79,7 +79,7 @@
   --muted-foreground: oklch(0.48 0.02 60);
   --accent: oklch(0.955 0.008 75);
   --accent-foreground: oklch(0.22 0.012 55);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.53 0.22 27);
   --border: oklch(0.91 0.008 75);
   --input: oklch(0.91 0.008 75);
   --ring: oklch(0.54 0.17 40);
@@ -127,7 +127,7 @@
   --muted-foreground: oklch(0.72 0.015 65);
   --accent: oklch(0.27 0.01 60);
   --accent-foreground: oklch(0.96 0.006 75);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.78 0.17 22);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.7 0.17 42);
@@ -166,5 +166,27 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/*
+ * En <input type="date"> el foco cae en un sub-campo interno (día, mes, año) y
+ * `:focus-visible` del input no siempre coincide: el anillo de foco no se ve.
+ * `:focus-within` sí incluye ese sub-campo.
+ */
+input[type="date"]:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
+}
+
+/* Quien pide menos movimiento no ve animaciones ni transiciones largas. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
