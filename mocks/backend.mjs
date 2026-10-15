@@ -40,6 +40,16 @@ let nextId = 1000;
 
 function storeFor(userId) {
   const key = String(userId);
+  // MOCK_SEED=0: cada usuario empieza sin datos (para probar los estados vacíos).
+  if (!stores.has(key) && process.env.MOCK_SEED === "0") {
+    stores.set(key, {
+      ingresos: [],
+      egresos: [],
+      metas: [],
+      inversiones: [],
+      fechasCorte: [],
+    });
+  }
   if (!stores.has(key)) {
     const iso = (d) => new Date(d).toISOString();
     const now = new Date();
