@@ -23,7 +23,9 @@ export default async function LoginPage({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Entra a tu cuenta</CardTitle>
+        <CardTitle role="heading" aria-level={1} className="text-xl">
+          Entra a tu cuenta
+        </CardTitle>
         <CardDescription>
           {registrado
             ? "Tu cuenta está lista. Inicia sesión para continuar."

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -52,6 +53,12 @@ export function LoginForm({ next }: { next?: string }) {
         error={errors.contrasena?.message}
         {...register("contrasena")}
       />
+      <Link
+        href="/olvido"
+        className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+      >
+        ¿Olvidaste tu contraseña?
+      </Link>
       <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Iniciando sesión…" : "Iniciar sesión"}
       </Button>

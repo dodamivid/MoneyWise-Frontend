@@ -65,3 +65,18 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 - **Cerrar sesión borra la cookie** pero no invalida nada en el backend, porque el backend no guarda sesiones.
 - Los `scopes` que se mandan son los que devuelve el login. Si el backend no incluye uno que un módulo exige (por ejemplo `dashboard:leer`), ese módulo responderá `403`.
+
+## Perfil y recuperación de contraseña
+
+| Pantalla             | Ruta                     | Qué hace                                                                                                 |
+| -------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Perfil               | `/perfil`                | Ve y edita nombre, apellidos y fecha de nacimiento (`PUT /api/users/:id`). El correo es de solo lectura. |
+| Cambiar contraseña   | `/perfil`                | `PATCH /api/users/:id/contrasena` con `contrasenaActual` y `contrasenaNueva`.                            |
+| Olvidé mi contraseña | `/olvido`                | `POST /api/v1/auth/olvido`. Responde igual exista o no el correo.                                        |
+| Restablecer          | `/restablecer?token=...` | `POST /api/v1/auth/restablecer` con el `token` (UUID) y `contrasenaNueva`.                               |
+
+- `/olvido` y `/restablecer` son públicas **aunque haya sesión**, porque el enlace llega por correo.
+- Al editar el nombre se reescribe la cookie de sesión (`actualizarNombreSesionAction`) para que el saludo no quede desactualizado.
+- El enlace de recuperación caduca en **15 minutos** (configuración del backend) y apunta a `/restablecer?token=...`.
+- **El backend no envía correos de verdad**: `src/emails/auth.mailer.ts` escribe el enlace en su consola. En desarrollo hay que copiarlo de los logs del backend.
+- `PUT /api/users/:id` es más estricto que el registro: nombre y apellidos solo admiten letras y espacios.

@@ -4,12 +4,21 @@ import { redirect } from "next/navigation";
 
 import { callBackend } from "@/lib/api/backend";
 import type { AccesoData } from "@/lib/api/types";
-import { deleteSession, createSession, SessionConfigError } from "./session";
+import {
+  deleteSession,
+  createSession,
+  getSession,
+  SessionConfigError,
+} from "./session";
 import {
   loginSchema,
+  olvidoSchema,
   registroSchema,
+  restablecerSchema,
   type LoginValues,
+  type OlvidoValues,
   type RegistroValues,
+  type RestablecerValues,
 } from "./schemas";
 
 /** Resultado de una acción que falló. Si sale bien, la acción redirige. */
@@ -142,4 +151,84 @@ export async function registroAction(
 export async function logoutAction(): Promise<void> {
   await deleteSession();
   redirect("/login");
+}
+
+// ── Recuperación de contraseña y datos de sesión (issue #13) ────────────────
+
+export type OlvidoResult = { ok: true } | ActionFailure;
+
+/**
+ * Pide el enlace de recuperación. El backend responde igual exista o no el
+ * correo, y aquí tampoco se revela: así no se puede averiguar quién tiene
+ * cuenta.
+ */
+export async function olvidoAction(input: OlvidoValues): Promise<OlvidoResult> {
+  const parsed = olvidoSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, mensaje: "Revisa el correo e inténtalo de nuevo." };
+  }
+
+  const result = await callBackend({
+    method: "POST",
+    path: "/api/v1/auth/olvido",
+    body: JSON.stringify({ correo: parsed.data.correo }),
+  });
+  if (!result.ok) {
+    return {
+      ok: false,
+      mensaje: result.error.mensaje,
+      traceId: result.error.traceId,
+    };
+  }
+  return { ok: true };
+}
+
+export type RestablecerResult = { ok: true } | ActionFailure;
+
+export async function restablecerAction(
+  token: string,
+  input: RestablecerValues,
+): Promise<RestablecerResult> {
+  const parsed = restablecerSchema.safeParse(input);
+  if (!parsed.success || !token) {
+    return { ok: false, mensaje: "Revisa los datos e inténtalo de nuevo." };
+  }
+
+  const result = await callBackend({
+    method: "POST",
+    path: "/api/v1/auth/restablecer",
+    body: JSON.stringify({
+      token,
+      contrasenaNueva: parsed.data.contrasenaNueva,
+    }),
+  });
+  if (!result.ok) {
+    const { error } = result;
+    const caducado = error.status === 400 || error.status === 422;
+    return {
+      ok: false,
+      mensaje: caducado
+        ? "El enlace ya no es válido o caducó. Pide uno nuevo desde “¿Olvidaste tu contraseña?”."
+        : error.mensaje,
+      traceId: error.traceId,
+    };
+  }
+  return { ok: true };
+}
+
+/**
+ * Actualiza el nombre guardado en la cookie de sesión después de editar el
+ * perfil, para que el saludo no muestre el nombre anterior.
+ */
+export async function actualizarNombreSesionAction(
+  nombre: string,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+  await createSession({
+    usuarioId: session.sub,
+    nombre: nombre.trim(),
+    correo: session.correo,
+    scopes: session.scopes,
+  });
 }
