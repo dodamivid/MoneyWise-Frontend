@@ -1,18 +1,9 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/layout/page-header";
-import { Empty } from "@/components/states/empty";
+import { MovimientosView } from "@/components/movimientos/movimientos-view";
 
 export const metadata: Metadata = { title: "Ingresos · MoneyWise" };
 
 export default function IngresosPage() {
-  return (
-    <div className="grid gap-6">
-      <PageHeader title="Ingresos" description="Lo que entra a tu bolsillo." />
-      <Empty
-        title="Estamos construyendo esta pantalla"
-        description="Pronto podrás usarla desde aquí."
-      />
-    </div>
-  );
+  return <MovimientosView kind="ingreso" />;
 }
