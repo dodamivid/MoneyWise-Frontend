@@ -32,7 +32,10 @@ function SideLink({ item, pathname }: { item: NavItem; pathname: string }) {
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
-      <item.icon className="size-5 shrink-0" aria-hidden="true" />
+      <item.icon
+        className={cn("size-5 shrink-0", active && "text-primary")}
+        aria-hidden="true"
+      />
       {item.label}
     </Link>
   );
