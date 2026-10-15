@@ -102,7 +102,12 @@ export function MetasVsAhorroChart({ data }: { data: MetaDatum[] }) {
           accessibilityLayer={false}
         >
           <CartesianGrid vertical={false} stroke="var(--border)" />
-          <XAxis dataKey="nombre" tick={AXIS} stroke="var(--border)" />
+          <XAxis
+            dataKey="nombre"
+            interval={0}
+            tick={AXIS}
+            stroke="var(--border)"
+          />
           <YAxis
             tickFormatter={compactMoney}
             tick={AXIS}
