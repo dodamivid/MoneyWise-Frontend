@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { callBackend, resolveBackendPath } from "@/lib/api/backend";
 import { getBackendIdentity } from "@/lib/api/identity";
 import { networkError, type ApiResult } from "@/lib/api/envelope";
+import { scopeSearchToUser } from "@/lib/api/scopes";
 
 /**
  * Proxy hacia el backend de Railway.
@@ -70,7 +71,14 @@ async function handle(request: NextRequest, context: RouteContext) {
   const result = await callBackend({
     method: request.method,
     path: backendPath,
-    search: request.nextUrl.search,
+    search: identity
+      ? scopeSearchToUser(
+          request.method,
+          backendPath,
+          request.nextUrl.search,
+          identity.userId,
+        )
+      : request.nextUrl.search,
     body,
     identity,
   });

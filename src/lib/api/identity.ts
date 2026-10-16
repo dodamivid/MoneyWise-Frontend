@@ -1,5 +1,6 @@
 import "server-only";
 
+import { withMissingScopes } from "@/lib/api/scopes";
 import { getSession } from "@/lib/auth/session";
 
 /**
@@ -19,5 +20,5 @@ export interface BackendIdentity {
 export async function getBackendIdentity(): Promise<BackendIdentity | null> {
   const session = await getSession();
   if (!session) return null;
-  return { userId: session.sub, scopes: session.scopes };
+  return { userId: session.sub, scopes: withMissingScopes(session.scopes) };
 }

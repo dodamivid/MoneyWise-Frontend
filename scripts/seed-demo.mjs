@@ -104,7 +104,11 @@ async function main() {
   // 1. Usuario: registrar (si ya existe, no pasa nada) e iniciar sesión.
   const registro = await call("POST", "/api/v1/auth/registro", { body: DEMO });
   if (registro.ok) console.log("Usuario demo creado.");
-  else if (registro.status === 409) console.log("El usuario demo ya existía.");
+  else if (
+    registro.status === 409 ||
+    /ya est.{1,2} registrado/i.test(registro.json?.mensaje ?? "")
+  )
+    console.log("El usuario demo ya existía.");
   else must(registro, "registro");
 
   const acceso = must(
@@ -115,7 +119,15 @@ async function main() {
   );
   const user = {
     id: acceso.usuario.usuarioId,
-    scopes: acceso.usuario.scopes ?? [],
+    // El registro del backend no concede `ahorro:*`; el front los agrega
+    // (ver src/lib/api/scopes.ts).
+    scopes: [
+      ...new Set([
+        ...(acceso.usuario.scopes ?? []),
+        "ahorro:leer",
+        "ahorro:escribir",
+      ]),
+    ],
   };
 
   // 2. Si ya tiene datos, no se duplican.
