@@ -126,7 +126,11 @@ export async function registroAction(
 
   if (!registro.ok) {
     const { error } = registro;
-    if (error.status === 409) {
+    // El backend real responde 400 (no 409) con "El correo ya está registrado".
+    if (
+      error.status === 409 ||
+      /ya est.{1,2} registrado/i.test(error.mensaje)
+    ) {
       return {
         ok: false,
         mensaje:

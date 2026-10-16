@@ -71,16 +71,23 @@ export function useBalance() {
   };
 }
 
-/** Metas activas contra lo ahorrado en el periodo. */
+/**
+ * El backend incluye una meta solo si su `fechaInicio` cae dentro del rango.
+ * Con el rango del mes, una meta empezada en agosto no saldría en octubre, y el
+ * resumen dice "cuánto llevas de cada meta activa". Por eso se pide desde una
+ * fecha muy anterior hasta el fin del mes.
+ */
+const METAS_DESDE = "2000-01-01T00:00:00.000Z";
+
+/** Metas activas contra lo ahorrado hasta el fin del periodo. */
 export function useMetasVsAhorro(range: Range) {
   return useQuery({
-    queryKey: ["dashboard", "metas", range.desde, range.hasta],
+    queryKey: ["dashboard", "metas", range.hasta],
     queryFn: async ({ signal }) =>
       (
         await unwrap(
           api.get<DashboardMetasDTO>("/v1/dashboard/metas-vs-ahorro", {
-            // Solo desde y hasta: el rango puede traer más campos (label).
-            query: { desde: range.desde, hasta: range.hasta },
+            query: { desde: METAS_DESDE, hasta: range.hasta },
             signal,
           }),
         )

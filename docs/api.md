@@ -89,3 +89,17 @@ const result = await callBackend<FrecuenciaDTO[]>({
 ## Errores y `traceId`
 
 El backend responde con `X-Trace-Id`. El proxy lo conserva en `error.traceId` y en el header de respuesta. Al reportar un fallo, ese identificador permite encontrar la petición en los logs del backend.
+
+## Diferencias encontradas al probar contra el backend real (16 oct 2026)
+
+Primera prueba contra Railway (antes solo se había usado el simulado). El backend lo usan otros proyectos, así que no se modifica: el front se adapta.
+
+| Hallazgo                                                                                                                                                  | Qué hace el front                                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| El registro no da los scopes `ahorro:*` ni `usuarios:*` (`sp_usuarios_registrar`): fecha de corte y perfil respondían 403, y el balance 404 para siempre. | `src/lib/api/scopes.ts` los agrega a la identidad que el **servidor** manda (`identity.ts`). El backend sigue limitando `/users/:id` al propio usuario. |
+| `GET /v1/metas` sin `usuarioId` devuelve lista vacía (`sp_metas_listar` filtra por `usuario_id`).                                                         | El proxy fija `usuarioId` con el de la sesión y pisa el que mande el navegador.                                                                         |
+| `GET /v1/dashboard/metas-vs-ahorro` solo incluye metas cuya `fechaInicio` cae en el rango.                                                                | El resumen pide desde el año 2000 hasta el fin del mes.                                                                                                 |
+| Correo repetido en el registro responde `400` con "El correo ya está registrado", no `409`.                                                               | `actions.ts` y `seed-demo.mjs` reconocen también el mensaje.                                                                                            |
+| `GET /v1/dashboard/balance` sin fecha de corte responde `404` (el simulado devolvía `data: null`).                                                        | Sin cambios: el front ya revisa las fechas de corte antes de pedir el balance.                                                                          |
+
+Si algún día el backend corrige el registro, se puede borrar `scopes.ts` y su uso en `identity.ts`.
