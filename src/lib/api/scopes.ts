@@ -40,6 +40,24 @@ export function scopeSearchToUser(
   return `?${params.toString()}`;
 }
 
+const METAS_ITEM_PATH = /^\/api\/v1\/metas\/\d+\/?$/;
+
+/**
+ * `DELETE /v1/metas/:id` exige `usuarioId` en el body (el backend aún no lo
+ * saca de la sesión) y responde 500 sin él. El proxy lo manda con el usuario de
+ * la sesión; el `sp_metas_eliminar` solo borra metas de ese usuario.
+ */
+export function bodyForUser(
+  method: string,
+  backendPath: string,
+  userId: string,
+): string | undefined {
+  if (method !== "DELETE" || !METAS_ITEM_PATH.test(backendPath)) {
+    return undefined;
+  }
+  return JSON.stringify({ usuarioId: Number(userId) });
+}
+
 /** Devuelve `scopes` más los de `MISSING_SCOPES` que falten, sin duplicar ni mutar. */
 export function withMissingScopes(scopes: readonly string[]): string[] {
   const result = [...scopes];

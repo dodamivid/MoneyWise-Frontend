@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { callBackend, resolveBackendPath } from "@/lib/api/backend";
 import { getBackendIdentity } from "@/lib/api/identity";
 import { networkError, type ApiResult } from "@/lib/api/envelope";
-import { scopeSearchToUser } from "@/lib/api/scopes";
+import { bodyForUser, scopeSearchToUser } from "@/lib/api/scopes";
 
 /**
  * Proxy hacia el backend de Railway.
@@ -79,7 +79,9 @@ async function handle(request: NextRequest, context: RouteContext) {
           identity.userId,
         )
       : request.nextUrl.search,
-    body,
+    body:
+      (identity && bodyForUser(request.method, backendPath, identity.userId)) ??
+      body,
     identity,
   });
 
