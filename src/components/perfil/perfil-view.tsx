@@ -262,7 +262,7 @@ function ContrasenaForm({ usuarioId }: { usuarioId: number }) {
             label="Contraseña nueva"
             type="password"
             autoComplete="new-password"
-            hint="Mínimo 8 caracteres, con una mayúscula, una minúscula y un número."
+            hint="Mínimo 8 caracteres, con una mayúscula, una minúscula, un número y un símbolo."
             error={errors.contrasenaNueva?.message}
             {...register("contrasenaNueva")}
           />

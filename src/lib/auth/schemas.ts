@@ -27,6 +27,15 @@ const contrasenaNueva = z
   .regex(/[a-z]/, "La contraseña debe incluir una minúscula.")
   .regex(/[0-9]/, "La contraseña debe incluir un número.");
 
+/**
+ * Al cambiar la contraseña desde el perfil el backend exige además un símbolo
+ * especial (`ChangePasswordSchema`); al registrarse o restablecer, no.
+ */
+const contrasenaNuevaConSimbolo = contrasenaNueva.regex(
+  /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
+  "La contraseña debe incluir un símbolo, por ejemplo ! o #.",
+);
+
 function esMayorDe16(fecha: string): boolean {
   const nacimiento = new Date(`${fecha}T00:00:00`);
   if (Number.isNaN(nacimiento.getTime())) return false;
@@ -93,7 +102,7 @@ export type PerfilValues = z.infer<typeof perfilSchema>;
 export const cambioContrasenaSchema = z
   .object({
     contrasenaActual: z.string().min(1, "Escribe tu contraseña actual."),
-    contrasenaNueva: contrasenaNueva,
+    contrasenaNueva: contrasenaNuevaConSimbolo,
     confirmarContrasena: z.string().min(1, "Repite la contraseña nueva."),
   })
   .refine((v) => v.contrasenaNueva === v.confirmarContrasena, {

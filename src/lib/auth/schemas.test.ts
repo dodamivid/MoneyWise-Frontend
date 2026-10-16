@@ -105,11 +105,23 @@ describe("cambioContrasenaSchema", () => {
     expect(
       firstError(
         cambioContrasenaSchema.safeParse({
-          contrasenaActual: "Secreta123",
-          contrasenaNueva: "Secreta123",
-          confirmarContrasena: "Secreta123",
+          contrasenaActual: "Secreta123!",
+          contrasenaNueva: "Secreta123!",
+          confirmarContrasena: "Secreta123!",
         }),
       ),
     ).toMatch(/distinta de la actual/);
+  });
+
+  it("pide un símbolo, como el backend al cambiar la contraseña", () => {
+    expect(
+      firstError(
+        cambioContrasenaSchema.safeParse({
+          contrasenaActual: "Secreta123!",
+          contrasenaNueva: "Nueva12345",
+          confirmarContrasena: "Nueva12345",
+        }),
+      ),
+    ).toMatch(/símbolo/);
   });
 });

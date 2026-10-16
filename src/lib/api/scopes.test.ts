@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { scopeSearchToUser, withMissingScopes } from "./scopes";
+import { bodyForUser, scopeSearchToUser, withMissingScopes } from "./scopes";
 
 describe("withMissingScopes", () => {
   it("agrega los scopes de ahorro que faltan", () => {
@@ -57,5 +57,21 @@ describe("scopeSearchToUser", () => {
     );
     expect(scopeSearchToUser("GET", "/api/v1/metas/20", "", "9")).toBe("");
     expect(scopeSearchToUser("POST", "/api/v1/metas", "", "9")).toBe("");
+  });
+});
+
+describe("bodyForUser", () => {
+  it("manda el usuario de la sesión al borrar una meta", () => {
+    expect(bodyForUser("DELETE", "/api/v1/metas/22", "9")).toBe(
+      '{"usuarioId":9}',
+    );
+  });
+
+  it("no agrega body en otros borrados ni métodos", () => {
+    expect(
+      bodyForUser("DELETE", "/api/v1/inversiones/22", "9"),
+    ).toBeUndefined();
+    expect(bodyForUser("DELETE", "/api/v1/metas", "9")).toBeUndefined();
+    expect(bodyForUser("PATCH", "/api/v1/metas/22", "9")).toBeUndefined();
   });
 });
